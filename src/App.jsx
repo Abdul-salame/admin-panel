@@ -10,6 +10,7 @@ import Messages from "./admin/pages/Messages";
 import BlogEditor from "./admin/pages/BlogEditor";
 import Login from "./admin/pages/Login";
 import ProtectedRoute from "./admin/ProtectedRoute";
+import Settings from "./admin/pages/Settings";
 
 export default function App() {
   return (
@@ -34,6 +35,9 @@ export default function App() {
           <Route path="news" element={<News />} />
           <Route path="messages" element={<Messages />} />
           <Route path="blog-editor" element={<BlogEditor />} />
+
+          
+          <Route path="settings" element={<Settings />} />
         </Route>
 
       </Routes>

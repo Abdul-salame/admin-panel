@@ -18,12 +18,13 @@ export default function Topbar() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
+  // Theme toggle
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
     localStorage.setItem("theme", dark ? "dark" : "light");
   }, [dark]);
 
-  
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -34,8 +35,9 @@ export default function Topbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Logout
   const handleLogout = () => {
-    localStorage.removeItem("admin-auth");
+    localStorage.removeItem("gmi_admin_auth"); // ✅ FIXED
     navigate("/login");
   };
 
@@ -49,8 +51,8 @@ export default function Topbar() {
 
       {/* Right */}
       <div className="flex items-center gap-4">
-  
-      
+
+        {/* Theme Toggle */}
         <button
           onClick={() => setDark(!dark)}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300"
@@ -79,13 +81,19 @@ export default function Topbar() {
           {open && (
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden z-50">
               
+              {/* SETTINGS */}
               <button
+                onClick={() => {
+                  setOpen(false);
+                  navigate("/settings");
+                }}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
               >
                 <Settings size={16} />
                 Settings
               </button>
 
+              {/* LOGOUT */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"

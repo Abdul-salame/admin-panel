@@ -6,7 +6,8 @@ import {
   Users,
   Newspaper,
   Mail,
-  LogOut
+  LogOut,
+   CreditCard
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -32,6 +33,12 @@ export default function Sidebar() {
         <Item to="/news" icon={<Newspaper size={18} />} text="News Mentions" />
         <Item to="/messages" icon={<Mail size={18} />} text="Messages" />
          <Item to="/blog-editor" icon={<Mail size={18} />} text="Blog Editor" />
+         <Item
+  to="/donations"
+  icon={<CreditCard size={18} />}
+  text="Manage Donations"
+/>
+
       </nav>
 
       {/* Logout */}
@@ -41,7 +48,7 @@ export default function Sidebar() {
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-300 hover:bg-red-500/10 hover:text-red-400 transition"
         >
           <LogOut size={18} />
-          Logout
+          Logout  
         </button>
       </div>
 

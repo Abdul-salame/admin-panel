@@ -1,34 +1,85 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../api/api.js";
 
 export default function Login() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "",
+    fullName: "",
     email: "",
-    password: ""
+    password: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    // validation
-    if (!form.email || !form.password) {
-      alert("Email and password are required");
+    //  Frontend validation
+    if (!form.fullName || !form.email || !form.password) {
+      setError("Full name, email, and password are required");
       return;
     }
 
-    // auth
-    localStorage.setItem("gmi_admin_auth", "true");
+    setLoading(true);
 
-    // Redirect to dashboard
-    navigate("/");
+    try {
+      //  SEND fullName to backend
+      const res = await api.post("/auth/login", {
+        fullName: form.fullName.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      });
+
+      const user = res.data.data;
+
+      if (!user) {
+        setError("Invalid server response: No user data found");
+        return;
+      }
+
+      //  Role check
+      if (user.role !== "SUPERADMIN") {
+        setError("Unauthorized access: Super Admin only");
+        return;
+      }
+
+      //  Save admin session
+      localStorage.setItem(
+        "gmi_admin",
+        JSON.stringify({
+          id: user.id,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+        })
+      );
+
+      //  Save token
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+      navigate("/");
+    } catch (err) {
+      const backendError = err.response?.data;
+
+      if (backendError?.errors?.length) {
+        setError(backendError.errors.map(e => e.message).join(", "));
+      } else {
+        setError(backendError?.message || "Invalid login credentials");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,20 +90,24 @@ export default function Login() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* Full Name */}
           <div>
             <label className="text-sm font-semibold text-gray-700">
               Full Name
             </label>
             <input
               type="text"
-              name="name"
-              value={form.name}
+              name="fullName"
+              value={form.fullName}
               onChange={handleChange}
-              className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Admin Name"
+              className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
+              placeholder="John Doe"
+              required
             />
           </div>
 
+          {/* Email */}
           <div>
             <label className="text-sm font-semibold text-gray-700">
               Email
@@ -62,11 +117,13 @@ export default function Login() {
               name="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="admin@gmi.org"
+              className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
+              placeholder="demo@gmail.com"
+              required
             />
           </div>
 
+          {/* Password */}
           <div>
             <label className="text-sm font-semibold text-gray-700">
               Password
@@ -76,16 +133,24 @@ export default function Login() {
               name="password"
               value={form.password}
               onChange={handleChange}
-              className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
               placeholder="••••••••"
+              required
             />
           </div>
 
+          {error && (
+            <p className="text-red-600 text-sm text-center font-medium bg-red-50 py-2 rounded">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-60"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

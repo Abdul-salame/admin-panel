@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api.js";
@@ -39,7 +40,7 @@ export default function Login() {
         password: form.password,
       });
 
-      const user = res.data.data;
+      const user = res.data.user;
 
       if (!user) {
         setError("Invalid server response: No user data found");
@@ -68,7 +69,7 @@ export default function Login() {
         localStorage.setItem("token", res.data.token);
       }
 
-      navigate("/");
+      navigate("/admin/dashboard", { replace: true });
     } catch (err) {
       const backendError = err.response?.data;
 
@@ -102,7 +103,7 @@ export default function Login() {
               value={form.fullName}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
-              placeholder="John Doe"
+              placeholder="Abdool"
               required
             />
           </div>

@@ -1,16 +1,20 @@
 
 import { useState } from "react";
-import { FileText, Image as ImageIcon, Eye, Save, Type } from "lucide-react";
+import { FileText, Image as ImageIcon, Eye, Save, Type, Tag } from "lucide-react";
+import { createBlog } from "../../api/blogApi";
 
 export default function BlogEditor() {
   const [blog, setBlog] = useState({
     title: "",
     excerpt: "",
     content: "",
+    category: "",       // ✅ Add category
     imageFile: null,
     imagePreview: "",
     status: "Draft",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,27 +26,44 @@ export default function BlogEditor() {
     if (!file) return;
 
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
-
     if (!allowedTypes.includes(file.type)) {
       alert("Only PNG, JPG, and WEBP images are allowed.");
       return;
     }
 
-    const previewUrl = URL.createObjectURL(file);
-
     setBlog((prev) => ({
       ...prev,
       imageFile: file,
-      imagePreview: previewUrl,
+      imagePreview: URL.createObjectURL(file),
     }));
   };
 
-  const submitBlog = (e) => {
+  const submitBlog = async (e) => {
     e.preventDefault();
+    if (!blog.category) {
+      alert("Please select a category");
+      return;
+    }
 
-    console.log("BLOG DATA (frontend only):", blog);
-
-    alert("Blog prepared for publishing");
+    setLoading(true);
+    try {
+      await createBlog(blog);
+      alert("✅ Blog created successfully!");
+      setBlog({
+        title: "",
+        excerpt: "",
+        content: "",
+        category: "",
+        imageFile: null,
+        imagePreview: "",
+        status: "Draft",
+      });
+    } catch (error) {
+      console.error("Blog creation error:", error);
+      alert("❌ Failed to create blog. Check console for details.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,7 +71,7 @@ export default function BlogEditor() {
       {/* HEADER */}
       <header className="mb-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-blue-400 flex items-center gap-3">
+          <h1 className="text-4xl font-extrabold text-slate-900 flex items-center gap-3">
             <FileText className="text-blue-500" /> Create Blog Post
           </h1>
           <p className="text-blue-800 mt-2 text-lg">
@@ -74,7 +95,7 @@ export default function BlogEditor() {
         {/* FORM */}
         <form
           onSubmit={submitBlog}
-          className="space-y-6 bg-white dark:bg-slate-500 p-8 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-400"
+          className="space-y-6 bg-white p-8 rounded-3xl shadow-lg border"
         >
           {/* TITLE */}
           <div>
@@ -85,9 +106,24 @@ export default function BlogEditor() {
               name="title"
               value={blog.title}
               onChange={handleChange}
+              required
               placeholder="Enter a catchy title..."
               className="w-full p-4 rounded-xl border focus:ring-2 focus:ring-blue-500 text-lg font-semibold"
+            />
+          </div>
+
+          {/* CATEGORY */}
+          <div>
+            <label className="text-sm font-medium mb-2 flex items-center gap-2">
+              <Tag size={16} /> Category
+            </label>
+            <input
+              name="category"
+              value={blog.category}
+              onChange={handleChange}
               required
+              placeholder="e.g., Technology, Education, News"
+              className="w-full p-4 rounded-xl border focus:ring-2 focus:ring-blue-500 text-lg font-semibold"
             />
           </div>
 
@@ -100,22 +136,17 @@ export default function BlogEditor() {
               type="file"
               accept="image/png,image/jpeg,image/jpg,image/webp"
               onChange={handleImageSelect}
-              className="w-full p-3 rounded-xl border border-slate-300 bg-white dark:bg-slate-800 text-sm"
+              className="w-full p-3 rounded-xl border text-sm"
             />
-            <p className="text-xs text-slate-500 mt-1">
-              PNG, JPG, or WEBP only
-            </p>
           </div>
 
           {/* IMAGE PREVIEW */}
           {blog.imagePreview && (
-            <div className="rounded-xl overflow-hidden border">
-              <img
-                src={blog.imagePreview}
-                alt="Selected Preview"
-                className="w-full h-56 object-cover"
-              />
-            </div>
+            <img
+              src={blog.imagePreview}
+              alt="Preview"
+              className="w-full h-56 object-cover rounded-xl border"
+            />
           )}
 
           {/* EXCERPT */}
@@ -129,7 +160,7 @@ export default function BlogEditor() {
               onChange={handleChange}
               maxLength={160}
               className="w-full p-4 h-28 rounded-xl border"
-              placeholder="Brief summary for social media..."
+              placeholder="Short summary..."
             />
           </div>
 
@@ -147,7 +178,7 @@ export default function BlogEditor() {
             />
           </div>
 
-          {/* STATUS & SAVE */}
+          {/* STATUS + SUBMIT */}
           <div className="flex flex-col md:flex-row gap-4">
             <select
               name="status"
@@ -161,9 +192,11 @@ export default function BlogEditor() {
 
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg"
+              disabled={loading}
+              className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2"
             >
-              <Save size={20} /> Save Post
+              <Save size={20} />
+              {loading ? "Saving..." : "Save Post"}
             </button>
           </div>
         </form>
@@ -174,7 +207,7 @@ export default function BlogEditor() {
             <Eye size={16} /> Live Preview
           </h2>
 
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
             <div className="h-56 bg-slate-100 flex items-center justify-center">
               {blog.imagePreview ? (
                 <img

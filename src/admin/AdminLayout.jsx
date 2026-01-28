@@ -10,6 +10,7 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col">
         <Topbar />
         <main className="p-8 flex-1">
+          {/* Renders the nested route component */}
           <Outlet />
         </main>
       </div>

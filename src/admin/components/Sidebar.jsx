@@ -7,14 +7,17 @@ import {
   Newspaper,
   Mail,
   LogOut,
-   CreditCard
+  CreditCard,
+  Settings as SettingsIcon
 } from "lucide-react";
 
 export default function Sidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("gmi_admin_auth");
+    // Clear the actual login storage keys
+    localStorage.removeItem("token");
+    localStorage.removeItem("gmi_admin");
     navigate("/login");
   };
 
@@ -27,18 +30,14 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="p-4 space-y-2 flex-1">
-        <Item to="/" icon={<LayoutDashboard size={18} />} text="Dashboard" />
-        <Item to="/programs" icon={<Layers size={18} />} text="Programs" />
-        <Item to="/partners" icon={<Users size={18} />} text="Partners" />
-        <Item to="/news" icon={<Newspaper size={18} />} text="News Mentions" />
-        <Item to="/messages" icon={<Mail size={18} />} text="Messages" />
-         <Item to="/blog-editor" icon={<Mail size={18} />} text="Blog Editor" />
-         <Item
-  to="/donations"
-  icon={<CreditCard size={18} />}
-  text="Manage Donations"
-/>
-
+        <Item to="" icon={<LayoutDashboard size={18} />} text="Dashboard" />
+        <Item to="programs" icon={<Layers size={18} />} text="Programs" />
+        <Item to="partners" icon={<Users size={18} />} text="Partners" />
+        <Item to="news" icon={<Newspaper size={18} />} text="News Mentions" />
+        <Item to="messages" icon={<Mail size={18} />} text="Messages" />
+        <Item to="blog-editor" icon={<Mail size={18} />} text="Blog Editor" />
+        <Item to="donations" icon={<CreditCard size={18} />} text="Manage Donations" />
+        <Item to="settings" icon={<SettingsIcon size={18} />} text="Settings" />
       </nav>
 
       {/* Logout */}
@@ -48,7 +47,7 @@ export default function Sidebar() {
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-300 hover:bg-red-500/10 hover:text-red-400 transition"
         >
           <LogOut size={18} />
-          Logout  
+          Logout
         </button>
       </div>
 
@@ -62,7 +61,7 @@ export default function Sidebar() {
 
 const Item = ({ to, icon, text }) => (
   <NavLink
-    to={to}
+    to={to}          // Relative to /admin
     end
     className={({ isActive }) =>
       `flex items-center gap-3 px-4 py-3 rounded-lg transition

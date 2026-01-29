@@ -82,4 +82,4 @@ export default function Admins() {
       </div>
     </div>
   );
-}
+} 

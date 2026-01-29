@@ -1,6 +1,13 @@
 
 import { useState } from "react";
-import { FileText, Image as ImageIcon, Eye, Save, Type, Tag } from "lucide-react";
+import {
+  FileText,
+  Image as ImageIcon,
+  Eye,
+  Save,
+  Type,
+  Tag,
+} from "lucide-react";
 import { createBlog } from "../../api/blogApi";
 
 export default function BlogEditor() {
@@ -8,7 +15,7 @@ export default function BlogEditor() {
     title: "",
     excerpt: "",
     content: "",
-    category: "",       // ✅ Add category
+    category: "", 
     imageFile: null,
     imagePreview: "",
     status: "Draft",
@@ -38,33 +45,49 @@ export default function BlogEditor() {
     }));
   };
 
-  const submitBlog = async (e) => {
-    e.preventDefault();
-    if (!blog.category) {
-      alert("Please select a category");
-      return;
+ const submitBlog = async (e) => {
+  e.preventDefault();
+
+  if (!blog.category) {
+    alert("Please select a category");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("title", blog.title);
+    formData.append("excerpt", blog.excerpt);
+    formData.append("content", blog.content);
+    formData.append("category", blog.category);
+    formData.append("status", blog.status);
+
+    if (blog.imageFile) {
+      formData.append("media", blog.imageFile);
     }
 
-    setLoading(true);
-    try {
-      await createBlog(blog);
-      alert("✅ Blog created successfully!");
-      setBlog({
-        title: "",
-        excerpt: "",
-        content: "",
-        category: "",
-        imageFile: null,
-        imagePreview: "",
-        status: "Draft",
-      });
-    } catch (error) {
-      console.error("Blog creation error:", error);
-      alert("❌ Failed to create blog. Check console for details.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    await createBlog(formData);
+
+    alert("✅ Blog created successfully!");
+
+    setBlog({
+      title: "",
+      excerpt: "",
+      content: "",
+      category: "",
+      imageFile: null,
+      imagePreview: "",
+      status: "Draft",
+    });
+  } catch (error) {
+    console.error("Blog creation error:", error);
+    alert("❌ Failed to create blog.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="max-w-7xl mx-auto p-6">

@@ -69,7 +69,7 @@ export default function BlogEditor() {
 
     await createBlog(formData);
 
-    alert("✅ Blog created successfully!");
+    alert(" Blog created successfully!");
 
     setBlog({
       title: "",
@@ -82,7 +82,7 @@ export default function BlogEditor() {
     });
   } catch (error) {
     console.error("Blog creation error:", error);
-    alert("❌ Failed to create blog.");
+    alert(" Failed to create blog.");
   } finally {
     setLoading(false);
   }

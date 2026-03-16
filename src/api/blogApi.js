@@ -1,3 +1,4 @@
+
 import api from "./api";
 
 export const createBlog = async (blogData) => {
@@ -10,14 +11,14 @@ export const createBlog = async (blogData) => {
       content: blogData.content,
       status: blogData.status,
       category: blogData.category,
-      image_url: blogData.image_url
+      image_url: blogData.image_url,
     };
 
     const response = await api.post("/blog", payload, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     return response.data;

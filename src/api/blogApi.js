@@ -13,7 +13,7 @@ export const createBlog = async (blogData) => {
       image_url: blogData.image_url
     };
 
-    const response = await api.post("/blog/blog", payload, {
+    const response = await api.post("/blog", payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"

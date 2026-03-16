@@ -1,26 +1,23 @@
-
 import api from "./api";
+
 export const createBlog = async (blogData) => {
   try {
-    const formData = new FormData();
+    const token = localStorage.getItem("token");
 
-    // Append all required fields
-    formData.append("title", blogData.title);
-    formData.append("excerpt", blogData.excerpt);
-    formData.append("content", blogData.content);
-    formData.append("status", blogData.status);
-    formData.append("category", blogData.category); 
+    const payload = {
+      title: blogData.title,
+      excerpt: blogData.excerpt,
+      content: blogData.content,
+      status: blogData.status,
+      category: blogData.category,
+      image_url: blogData.image_url
+    };
 
-    // Append image if provided
-    if (blogData.imageFile) {
-      formData.append("image", blogData.imageFile);
-    }
-
-    // Send POST request to backend
-    const response = await api.post("/blog/blog", formData, {
+    const response = await api.post("/blog/blog", payload, {
       headers: {
-        "Content-Type": "multipart/form-data", // important for file upload
-      },
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
     });
 
     return response.data;

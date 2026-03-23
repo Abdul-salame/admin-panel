@@ -1,5 +1,4 @@
 
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api.js";
@@ -7,8 +6,8 @@ import api from "../../api/api.js";
 export default function Login() {
   const navigate = useNavigate();
 
+  // Updated to match backend docs: only email and password required
   const [form, setForm] = useState({
-    fullName: "",
     email: "",
     password: "",
   });
@@ -24,60 +23,44 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    //  Frontend validation
-    if (!form.fullName || !form.email || !form.password) {
-      setError("Full name, email, and password are required");
+    // Standard frontend validation
+    if (!form.email || !form.password) {
+      setError("Email and password are required");
       return;
     }
 
     setLoading(true);
 
     try {
-      //  SEND fullName to backend
+      // Sending ONLY email and password as per the Swagger docs
       const res = await api.post("/auth/login", {
-        fullName: form.fullName.trim(),
         email: form.email.trim(),
         password: form.password,
       });
 
+      // The backend returns "Login successful" on 200
       const user = res.data.user;
+      const token = res.data.token;
 
-      if (!user) {
-        setError("Invalid server response: No user data found");
+      if (!token) {
+        setError("Login failed: No token received from server");
         return;
       }
 
-      //  Role check
-      if (user.role !== "SUPERADMIN") {
-        setError("Unauthorized access: Super Admin only");
-        return;
+      // Save token for the api.js Authorization header
+      localStorage.setItem("token", token);
+
+      // Save user details if they exist in the response
+      if (user) {
+        localStorage.setItem("gmi_admin", JSON.stringify(user));
       }
 
-      //  Save admin session
-      localStorage.setItem(
-        "gmi_admin",
-        JSON.stringify({
-          id: user.id,
-          fullName: user.fullName,
-          email: user.email,
-          role: user.role,
-        })
-      );
-
-      //  Save token
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
-      }
-
+      // Redirect to dashboard
       navigate("/admin/dashboard", { replace: true });
     } catch (err) {
       const backendError = err.response?.data;
-
-      if (backendError?.errors?.length) {
-        setError(backendError.errors.map(e => e.message).join(", "));
-      } else {
-        setError(backendError?.message || "Invalid login credentials");
-      }
+      // Handle the 401 "Invalid credentials" error from docs
+      setError(backendError?.message || "Invalid login credentials");
     } finally {
       setLoading(false);
     }
@@ -91,47 +74,28 @@ export default function Login() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* Full Name */}
-          <div>
-            <label className="text-sm font-semibold text-gray-700">
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="fullName"
-              value={form.fullName}
-              onChange={handleChange}
-              className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
-              placeholder="Abdool"
-              required
-            />
-          </div>
-
           {/* Email */}
           <div>
-            <label className="text-sm font-semibold text-gray-700">
-              Email
-            </label>
+            <label className="text-sm font-semibold text-gray-700">Email Address</label>
             <input
               type="email"
               name="email"
+              autoComplete="username"
               value={form.email}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
-              placeholder="demo@gmail.com"
+              placeholder="admin@example.com"
               required
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="text-sm font-semibold text-gray-700">
-              Password
-            </label>
+            <label className="text-sm font-semibold text-gray-700">Password</label>
             <input
               type="password"
               name="password"
+              autoComplete="current-password"
               value={form.password}
               onChange={handleChange}
               className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"

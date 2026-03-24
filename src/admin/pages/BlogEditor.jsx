@@ -17,7 +17,7 @@ export default function BlogEditor() {
     content: "",
     category: "",
     author: "",
-    status: "Published",
+    status: "published", 
     imageFile: null,
     imagePreview: "",
   });
@@ -43,8 +43,9 @@ export default function BlogEditor() {
   const submitBlog = async (e) => {
     e.preventDefault();
     
-    if (!blog.title || !blog.content || !blog.category || !blog.author || !blog.imageFile) {
-      alert("Please fill in all required fields, including the featured image.");
+    
+    if (!blog.title || !blog.content || !blog.category || !blog.imageFile) {
+      alert("Please fill in Title, Content, Category, and upload an Image.");
       return;
     }
 
@@ -53,43 +54,44 @@ export default function BlogEditor() {
     try {
       const formData = new FormData();
 
-      // Ensure all fields are appended as strings to satisfy Prisma/Multer requirements
+      
       formData.append("title", String(blog.title).trim());
-      formData.append("excerpt", String(blog.excerpt).trim());
+      formData.append("excerpt", String(blog.excerpt || "").trim());
       formData.append("content", String(blog.content).trim());
-      formData.append("category", String(blog.category).trim()); // The critical fix
-      formData.append("author", String(blog.author).trim()); 
-      formData.append("status", String(blog.status));
+      formData.append("category", String(blog.category).trim()); 
+      formData.append("author", String(blog.author || "Admin").trim()); 
+      formData.append("status", String(blog.status).toLowerCase());
 
+     
       const slug = blog.title
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "");
+        .replace(/[^\w\s-]/g, "") 
+        .replace(/[\s_-]+/g, "-") 
+        .replace(/^-+|-+$/g, ""); 
       formData.append("slug", slug);
 
-      // Binary field
+      
       formData.append("media", blog.imageFile);
 
       await createBlog(formData);
-      alert("Blog created successfully!");
+      alert("Blog published successfully!");
       
-      // Reset form
+      
       setBlog({
         title: "",
         excerpt: "",
         content: "",
         category: "",
         author: "",
-        status: "Published",
+        status: "published",
         imageFile: null,
         imagePreview: "",
       });
     } catch (error) {
-      console.error("API Error Details:", error.response?.data || error.message);
-      // Detailed alert to catch Prisma errors
-      const errorMsg = error.response?.data?.message || "Check network tab for Prisma details.";
-      alert(`Failed to create blog: ${errorMsg}`);
+      console.error("Publishing Error:", error.response?.data || error.message);
+      const errorDetail = error.response?.data?.message || "Check the console for Prisma details.";
+      alert(`Failed to create blog: ${errorDetail}`);
     } finally {
       setLoading(false);
     }
@@ -107,7 +109,7 @@ export default function BlogEditor() {
               value={blog.title}
               onChange={handleChange}
               placeholder="Blog Title *"
-              className="w-full text-3xl font-bold border-none focus:ring-0 placeholder-gray-300 mb-4 bg-transparent"
+              className="w-full text-3xl font-bold border-none focus:ring-0 placeholder-gray-300 mb-4 bg-transparent text-black"
               required
             />
             <hr className="mb-6" />
@@ -118,7 +120,7 @@ export default function BlogEditor() {
               value={blog.content}
               onChange={handleChange}
               placeholder="Write your blog content here..."
-              className="w-full min-h-[450px] border-none focus:ring-0 resize-none text-lg bg-transparent"
+              className="w-full min-h-[450px] border-none focus:ring-0 resize-none text-lg bg-transparent text-black"
               required
             />
           </div>
@@ -133,16 +135,15 @@ export default function BlogEditor() {
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase">Author Name *</label>
+                <label className="text-xs font-bold text-gray-500 uppercase">Author Name</label>
                 <div className="relative mt-1">
                   <User className="absolute left-3 top-2.5 text-gray-400" size={16} />
                   <input
                     name="author"
                     value={blog.author}
                     onChange={handleChange}
-                    placeholder="Enter author name"
-                    className="w-full pl-10 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
+                    placeholder="Admin"
+                    className="w-full pl-10 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                   />
                 </div>
               </div>
@@ -154,7 +155,7 @@ export default function BlogEditor() {
                   value={blog.category}
                   onChange={handleChange}
                   placeholder="e.g. Technology"
-                  className="w-full mt-1 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full mt-1 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                   required
                 />
               </div>
@@ -165,10 +166,10 @@ export default function BlogEditor() {
                   name="status" 
                   value={blog.status}
                   onChange={handleChange}
-                  className="w-full mt-1 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full mt-1 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 >
-                  <option value="Published">Published</option>
-                  <option value="Draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
                 </select>
               </div>
 
@@ -177,7 +178,7 @@ export default function BlogEditor() {
                 disabled={loading}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-3 rounded-lg transition-all shadow-md active:transform active:scale-95 flex items-center justify-center gap-2 mt-4"
               >
-                {loading ? "Creating..." : <><PlusCircle size={20} /> Publish Blog</>}
+                {loading ? "Publishing..." : <><PlusCircle size={20} /> Publish Blog</>}
               </button>
             </div>
           </div>
@@ -207,16 +208,16 @@ export default function BlogEditor() {
                 <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
                   <ImageIcon className="text-gray-400 mb-2" size={32} />
                   <p className="text-sm text-gray-600 font-medium">Click to upload image</p>
-                  <p className="text-xs text-gray-400 mt-1">Required for backend</p>
+                  <p className="text-xs text-gray-400 mt-1">Required for API</p>
                 </div>
-                <input type="file" className="hidden" onChange={handleImageSelect} accept="image/*" required />
+                <input type="file" className="hidden" onChange={handleImageSelect} accept="image/*" />
               </label>
             )}
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h3 className="flex items-center gap-2 font-bold text-gray-800 mb-4 border-b pb-2">
-              <FileText size={18} className="text-blue-600" /> Excerpt *
+              <FileText size={18} className="text-blue-600" /> Excerpt
             </h3>
             <textarea
               name="excerpt"
@@ -224,8 +225,7 @@ export default function BlogEditor() {
               onChange={handleChange}
               rows="4"
               placeholder="Provide a short summary..."
-              className="w-full rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
+              className="w-full rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             />
           </div>
         </div>

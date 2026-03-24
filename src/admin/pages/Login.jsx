@@ -38,7 +38,7 @@ export default function Login() {
         password: form.password,
       });
 
-      // The backend returns "Login successful" on 200
+      // The backend returns user data and a token on successful login
       const user = res.data.user;
       const token = res.data.token;
 
@@ -50,9 +50,16 @@ export default function Login() {
       // Save token for the api.js Authorization header
       localStorage.setItem("token", token);
 
-      // Save user details if they exist in the response
+      // Save user details for profile management
       if (user) {
-        localStorage.setItem("gmi_admin", JSON.stringify(user));
+        localStorage.setItem(
+          "gmi_admin",
+          JSON.stringify({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          })
+        );
       }
 
       // Redirect to dashboard

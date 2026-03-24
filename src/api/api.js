@@ -29,7 +29,7 @@ const request = async (method, path, payload, config = {}) => {
 
   let body;
   if (payload instanceof FormData) {
-    // IMPORTANT: Do NOT set Content-Type for FormData; let the browser handle the boundary
+  
     body = payload;
   } else if (payload != null) {
     headers["Content-Type"] = "application/json";

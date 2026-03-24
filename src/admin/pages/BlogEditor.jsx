@@ -17,7 +17,7 @@ export default function BlogEditor() {
     content: "",
     category: "",
     author: "",
-    status: "published", 
+    status: "PUBLISHED", 
     imageFile: null,
     imagePreview: "",
   });
@@ -44,8 +44,8 @@ export default function BlogEditor() {
     e.preventDefault();
     
     
-    if (!blog.title || !blog.content || !blog.category || !blog.imageFile) {
-      alert("Please fill in Title, Content, Category, and upload an Image.");
+    if (!blog.title.trim() || !blog.category.trim() || !blog.content.trim()) {
+      alert("Error: Title, Category, and Content cannot be empty!");
       return;
     }
 
@@ -56,42 +56,53 @@ export default function BlogEditor() {
 
       
       formData.append("title", String(blog.title).trim());
-      formData.append("excerpt", String(blog.excerpt || "").trim());
+      formData.append("category", String(blog.category).trim());
       formData.append("content", String(blog.content).trim());
-      formData.append("category", String(blog.category).trim()); 
-      formData.append("author", String(blog.author || "Admin").trim()); 
-      formData.append("status", String(blog.status).toLowerCase());
-
+      formData.append("excerpt", String(blog.excerpt || "").trim());
+      formData.append("author", String(blog.author || "Admin").trim());
+      
      
-      const slug = blog.title
-        .toLowerCase()
-        .trim()
-        .replace(/[^\w\s-]/g, "") 
-        .replace(/[\s_-]+/g, "-") 
-        .replace(/^-+|-+$/g, ""); 
-      formData.append("slug", slug);
+      formData.append("status", blog.status);
 
       
-      formData.append("media", blog.imageFile);
+      const generatedSlug = blog.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+      formData.append("slug", generatedSlug);
+
+      
+      if (blog.imageFile) {
+        formData.append("media", blog.imageFile);
+      } else {
+        alert("Please upload an image first.");
+        setLoading(false);
+        return;
+      }
 
       await createBlog(formData);
-      alert("Blog published successfully!");
+      alert("Blog created successfully!");
       
-      
+      // Reset form
       setBlog({
         title: "",
         excerpt: "",
         content: "",
         category: "",
         author: "",
-        status: "published",
+        status: "PUBLISHED", 
         imageFile: null,
         imagePreview: "",
       });
-    } catch (error) {
-      console.error("Publishing Error:", error.response?.data || error.message);
-      const errorDetail = error.response?.data?.message || "Check the console for Prisma details.";
-      alert(`Failed to create blog: ${errorDetail}`);
+      
+      // Revoke object URL to free memory
+      if (blog.imagePreview) {
+        URL.revokeObjectURL(blog.imagePreview);
+      }
+      const serverMessage = error.response?.data?.message || "Internal Server Error";
+      alert(`Backend Error: ${serverMessage}`);
+      console.error("Full Backend Error:", error.response?.data);
     } finally {
       setLoading(false);
     }
@@ -168,8 +179,8 @@ export default function BlogEditor() {
                   onChange={handleChange}
                   className="w-full mt-1 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 >
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
+                  <option value="PUBLISHED">Published</option>
+                  <option value="DRAFT">Draft</option>
                 </select>
               </div>
 

@@ -24,7 +24,7 @@ export default function App() {
         {/* Redirect root to admin */}
         <Route path="/" element={<Navigate to="/admin" replace />} />
 
-        {/* Protected Admin Routes */}
+        
         <Route
           path="/admin"
           element={
@@ -37,7 +37,7 @@ export default function App() {
           <Route index element={<Dashboard />} />             
           <Route path="dashboard" element={<Dashboard />} />  
 
-          {/* Other admin pages */}
+          
           <Route path="programs" element={<Programs />} />    
           <Route path="partners" element={<Partners />} />   
           <Route path="news" element={<News />} />            

@@ -7,7 +7,7 @@ const parseResponse = async (response) => {
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    data = { message: text };
+    data = { message: text };                               
   }
 
   if (!response.ok) {

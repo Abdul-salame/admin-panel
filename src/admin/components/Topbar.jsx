@@ -37,7 +37,7 @@ export default function Topbar() {
 
   // Logout
   const handleLogout = () => {
-    localStorage.removeItem("gmi_admin_auth"); // ✅ FIXED
+    localStorage.removeItem("gmi_admin_auth"); 
     navigate("/login");
   };
 

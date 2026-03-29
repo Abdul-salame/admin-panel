@@ -43,6 +43,7 @@ export default function App() {
           <Route path="news" element={<News />} />            
           <Route path="messages" element={<Messages />} />   
           <Route path="blog-editor" element={<BlogEditor />} />
+          <Route path="blog-editor/:id" element={<BlogEditor />} />
           <Route path="donations" element={<Donations />} />  
           <Route path="settings" element={<Settings />} />    
         </Route>

@@ -1,16 +1,22 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom"; // Essential for Edit/Delete
 import { 
   FileText, 
   Image as ImageIcon, 
   Save, 
   PlusCircle, 
   X,
-  User
+  User,
+  Trash2 // Added for Delete button
 } from "lucide-react";
-import { createBlog } from "../../api/blogApi";
+import { createBlog, updateBlog, deleteBlog, getBlogById } from "../../api/blogApi";
 
 export default function BlogEditor() {
+  const { id } = useParams(); 
+  const navigate = useNavigate();
+  const isEditMode = Boolean(id);
+
   const [blog, setBlog] = useState({
     title: "",
     excerpt: "",
@@ -23,6 +29,31 @@ export default function BlogEditor() {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // Fetch data if editing
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchBlogData = async () => {
+        try {
+          const data = await getBlogById(id);
+          setBlog({
+            title: data.title || "",
+            excerpt: data.excerpt || "",
+            content: data.content || "",
+            category: data.category || "",
+            author: data.author || "",
+            status: data.status || "PUBLISHED",
+            imageFile: null,
+            imagePreview: data.mediaUrl || data.image || "", // Use your backend's image field name
+          });
+        } catch (err) {
+          console.error("Failed to fetch blog:", err);
+          alert("Could not load blog data.");
+        }
+      };
+      fetchBlogData();
+    }
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,9 +71,23 @@ export default function BlogEditor() {
     }));
   };
 
+  // --- NEW DELETE FEATURE ---
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this blog?")) return;
+    setLoading(true);
+    try {
+      await deleteBlog(id);
+      alert("Blog deleted successfully!");
+      navigate("/admin/blogs"); // Redirect to your list page
+    } catch (err) {
+      alert("Delete failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const submitBlog = async (e) => {
     e.preventDefault();
-    
     
     if (!blog.title.trim() || !blog.category.trim() || !blog.content.trim()) {
       alert("Error: Title, Category, and Content cannot be empty!");
@@ -53,18 +98,13 @@ export default function BlogEditor() {
 
     try {
       const formData = new FormData();
-
-      
       formData.append("title", String(blog.title).trim());
       formData.append("category", String(blog.category).trim());
       formData.append("content", String(blog.content).trim());
       formData.append("excerpt", String(blog.excerpt || "").trim());
       formData.append("author", String(blog.author || "Admin").trim());
-      
-     
       formData.append("status", blog.status);
 
-      
       const generatedSlug = blog.title
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "-")
@@ -72,37 +112,37 @@ export default function BlogEditor() {
         .replace(/^-|-$/g, "");
       formData.append("slug", generatedSlug);
 
-      
       if (blog.imageFile) {
         formData.append("media", blog.imageFile);
-      } else {
+      } else if (!isEditMode) {
         alert("Please upload an image first.");
         setLoading(false);
         return;
       }
 
-      await createBlog(formData);
-      alert("Blog created successfully!");
+      // --- MODIFIED TO HANDLE UPDATE OR CREATE ---
+      if (isEditMode) {
+        await updateBlog(id, formData);
+        alert("Blog updated successfully!");
+      } else {
+        await createBlog(formData);
+        alert("Blog created successfully!");
+      }
       
-      // Reset form
-      setBlog({
-        title: "",
-        excerpt: "",
-        content: "",
-        category: "",
-        author: "",
-        status: "PUBLISHED", 
-        imageFile: null,
-        imagePreview: "",
-      });
+      if (!isEditMode) {
+        setBlog({
+          title: "", excerpt: "", content: "", category: "",
+          author: "", status: "PUBLISHED", imageFile: null, imagePreview: "",
+        });
+      }
       
-      // Revoke object URL to free memory
-      if (blog.imagePreview) {
+      if (blog.imagePreview && blog.imageFile) {
         URL.revokeObjectURL(blog.imagePreview);
       }
+
+    } catch (error) {
       const serverMessage = error.response?.data?.message || "Internal Server Error";
       alert(`Backend Error: ${serverMessage}`);
-      console.error("Full Backend Error:", error.response?.data);
     } finally {
       setLoading(false);
     }
@@ -112,7 +152,6 @@ export default function BlogEditor() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <form onSubmit={submitBlog} className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Main Editor Section */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <input
@@ -137,11 +176,10 @@ export default function BlogEditor() {
           </div>
         </div>
 
-        {/* Sidebar Controls */}
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h3 className="flex items-center gap-2 font-bold text-gray-800 mb-4 border-b pb-2">
-              <Save size={18} className="text-blue-600" /> Post Details
+              <Save size={18} className="text-blue-600" /> {isEditMode ? "Update Details" : "Post Details"}
             </h3>
             
             <div className="space-y-4">
@@ -187,13 +225,26 @@ export default function BlogEditor() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-3 rounded-lg transition-all shadow-md active:transform active:scale-95 flex items-center justify-center gap-2 mt-4"
+                className={`w-full ${isEditMode ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} disabled:bg-gray-300 text-white font-bold py-3 rounded-lg transition-all shadow-md active:transform active:scale-95 flex items-center justify-center gap-2 mt-4`}
               >
-                {loading ? "Publishing..." : <><PlusCircle size={20} /> Publish Blog</>}
+                {loading ? "Processing..." : isEditMode ? "Update Blog" : <><PlusCircle size={20} /> Publish Blog</>}
               </button>
+
+              {/* NEW DELETE BUTTON */}
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all mt-2"
+                >
+                  <Trash2 size={20} /> Delete Blog
+                </button>
+              )}
             </div>
           </div>
 
+          {/* Featured Image Section */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h3 className="flex items-center gap-2 font-bold text-gray-800 mb-4 border-b pb-2">
               <ImageIcon size={18} className="text-blue-600" /> Featured Image *

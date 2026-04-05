@@ -42,8 +42,8 @@ export default function App() {
           <Route path="partners" element={<Partners />} />   
           <Route path="news" element={<News />} />            
           <Route path="messages" element={<Messages />} />   
-          <Route path="blog-editor" element={<BlogEditor />} />
-          <Route path="blog-editor/:id" element={<BlogEditor />} />
+         <Route path="blog-editor" element={<BlogEditor key="create" />} />
+<Route path="blog-editor/:id" element={<BlogEditor key="edit" />} />
           <Route path="donations" element={<Donations />} />  
           <Route path="settings" element={<Settings />} />    
         </Route>

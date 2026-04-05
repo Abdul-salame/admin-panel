@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Essential for Edit/Delete
+import { useParams, useNavigate } from "react-router-dom"; 
 import { 
   FileText, 
   Image as ImageIcon, 
@@ -8,7 +8,7 @@ import {
   PlusCircle, 
   X,
   User,
-  Trash2 // Added for Delete button
+  Trash2 
 } from "lucide-react";
 import { createBlog, updateBlog, deleteBlog, getBlogById } from "../../api/blogApi";
 

@@ -17,14 +17,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* Login */}
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
 
-        {/* Redirect root to admin */}
-        <Route path="/" element={<Navigate to="/admin" replace />} />
+        {/* Redirect root to admin dashboard */}
+        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
 
-        
+        {/* Protected Admin Routes */}
         <Route
           path="/admin"
           element={
@@ -33,24 +32,30 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          {/* Dashboard */}
-          <Route index element={<Dashboard />} />             
-          <Route path="dashboard" element={<Dashboard />} />  
-
+          {/* Using 'index' makes Dashboard show at /admin. 
+              Adding 'dashboard' path makes it show at /admin/dashboard.
+          */}
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           
-          <Route path="programs" element={<Programs />} />    
-          <Route path="partners" element={<Partners />} />   
-          <Route path="news" element={<News />} />            
-          <Route path="messages" element={<Messages />} />   
-         <Route path="blog-editor" element={<BlogEditor key="create" />} />
-<Route path="blog-editor/:id" element={<BlogEditor key="edit" />} />
-          <Route path="donations" element={<Donations />} />  
-          <Route path="settings" element={<Settings />} />    
+          <Route path="programs" element={<Programs />} />
+          <Route path="partners" element={<Partners />} />
+          <Route path="news" element={<News />} />
+          <Route path="messages" element={<Messages />} />
+          
+          {/* Blog Editor Routes 
+              - The 'key' ensures the component re-mounts when switching 
+                between Create and Edit modes.
+          */}
+          <Route path="blog-editor" element={<BlogEditor key="create-blog" />} />
+          <Route path="blog-editor/:id" element={<BlogEditor key="edit-blog" />} />
+          
+          <Route path="donations" element={<Donations />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
-        
+        {/* Catch-all: Redirect unknown routes to login or dashboard */}
         <Route path="*" element={<Navigate to="/admin" replace />} />
-
       </Routes>
     </BrowserRouter>
   );

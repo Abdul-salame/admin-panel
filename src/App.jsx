@@ -20,10 +20,9 @@ export default function App() {
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
 
-        {/* Redirect root to admin dashboard */}
         <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
 
-        {/* Protected Admin Routes */}
+        
         <Route
           path="/admin"
           element={
@@ -32,9 +31,7 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          {/* Using 'index' makes Dashboard show at /admin. 
-              Adding 'dashboard' path makes it show at /admin/dashboard.
-          */}
+         
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           
@@ -43,10 +40,8 @@ export default function App() {
           <Route path="news" element={<News />} />
           <Route path="messages" element={<Messages />} />
           
-          {/* Blog Editor Routes 
-              - The 'key' ensures the component re-mounts when switching 
-                between Create and Edit modes.
-          */}
+         
+          
           <Route path="blog-editor" element={<BlogEditor key="create-blog" />} />
           <Route path="blog-editor/:id" element={<BlogEditor key="edit-blog" />} />
           
@@ -54,7 +49,6 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
 
-        {/* Catch-all: Redirect unknown routes to login or dashboard */}
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </BrowserRouter>

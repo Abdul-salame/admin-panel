@@ -85,7 +85,7 @@ export default function Topbar() {
               <button
                 onClick={() => {
                   setOpen(false);
-                  navigate("/settings");
+                  navigate("/admin/settings");
                 }}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
               >

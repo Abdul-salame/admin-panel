@@ -21,7 +21,7 @@ export default function Settings() {
   });
 
   /* ======================
-     Admin List (MOCK DATA)
+     Admin List 
   ======================= */
   const [admins, setAdmins] = useState([
     { id: 1, name: "Super Admin", email: "admin@gmi.org", role: "Admin", active: true },
